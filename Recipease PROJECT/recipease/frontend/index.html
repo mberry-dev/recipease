@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipease - Recipe Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-utensils"></i> Recipease</h1>
+            <p class="subtitle">Recipe Management & Meal Planning System</p>
+        </header>
+        
+        <nav class="app-nav">
+            <ul class="nav-tabs">
+                <li><a href="#" class="active" data-tab="dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="#" data-tab="recipes"><i class="fas fa-book"></i> Recipes</a></li>
+                <li><a href="#" data-tab="add-recipe"><i class="fas fa-plus-circle"></i> Add Recipe</a></li>
+                <li><a href="#" data-tab="meal-plan"><i class="fas fa-calendar-alt"></i> Meal Plan</a></li>
+                <li><a href="#" data-tab="grocery"><i class="fas fa-shopping-cart"></i> Grocery List</a></li>
+            </ul>
+        </nav>
+        
+        <div class="content">
+            <!-- Status Box -->
+            <div class="status-box" id="status-box">
+                <div class="spinner"></div>
+                <p>Connecting to backend server...</p>
+            </div>
+            
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="section active">
+                <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+                <p>Welcome to your recipe management system. Here's an overview of your data.</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-book-open"></i></div>
+                        <div class="stat-number" id="total-recipes">0</div>
+                        <div class="stat-label">Total Recipes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                        <div class="stat-number" id="avg-prep-time">0</div>
+                        <div class="stat-label">Avg Prep Time (min)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-utensil-spoon"></i></div>
+                        <div class="stat-number" id="categories">0</div>
+                        <div class="stat-label">Categories</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-database"></i></div>
+                        <div class="stat-number" id="db-status">OK</div>
+                        <div class="stat-label">Database Status</div>
+                    </div>
+                </div>
+                
+               <div class="quick-actions">
+                    <h3>Quick Actions</h3>
+                   <div class="action-buttons">
+                        <button class="btn" onclick="loadAllRecipes(); showTab('recipes');">
+                            <i class="fas fa-list"></i> View All Recipes
+                        </button>
+                        <button class="btn" onclick="showTab('add-recipe');">
+                            <i class="fas fa-plus"></i> Add New Recipe
+                        </button>
+                        <button class="btn" onclick="testBackend();">
+                            <i class="fas fa-plug"></i> Test Backend Connection
+                        </button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Recipes Section -->
+            <section id="recipes" class="section">
+    <h2><i class="fas fa-book"></i> My Recipes</h2>
+    <div class="recipes-controls">
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <select id="category-filter" class="category-filter">
+                <option value="">All Categories</option>
+                <option value="breakfast">Breakfast</option>
+                <option value="lunch">Lunch</option>
+                <option value="dinner">Dinner</option>
+                <option value="dessert">Dessert</option>
+                <option value="snack">Snack</option>
+            </select>
+            <button class="btn" onclick="applyFilter()">
+                <i class="fas fa-filter"></i> Apply Filter
+            </button>
+            <button class="btn btn-outline" onclick="clearFilters()">
+                <i class="fas fa-times"></i> Clear Filter
+            </button>
+        </div>
+    </div>
+    
+    <div id="recipes-container">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Loading recipes...</p>
+        </div>
+    </div>
+</section>
+            
+           <!-- Add Recipe Section -->
+<section id="add-recipe" class="section">
+    <h2><i class="fas fa-plus-circle"></i> Add New Recipe</h2>
+    <p>Fill in the details below to add a new recipe to your collection.</p>
+    
+    <div class="form-group">
+        <label for="title"><i class="fas fa-heading"></i> Recipe Title *</label>
+        <input type="text" id="title" placeholder="e.g., Spaghetti Carbonara" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="description"><i class="fas fa-align-left"></i> Description</label>
+        <textarea id="description" placeholder="Describe your recipe..."></textarea>
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group">
+            <label for="category"><i class="fas fa-tag"></i> Category</label>
+            <select id="category">
+                <option value="dinner">Dinner</option>
+                <option value="breakfast">Breakfast</option>
+                <option value="lunch">Lunch</option>
+                <option value="dessert">Dessert</option>
+                <option value="snack">Snack</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="prep-time"><i class="fas fa-clock"></i> Prep Time (minutes)</label>
+            <input type="number" id="prep-time" value="15" min="0">
+        </div>
+        <div class="form-group">
+            <label for="cook-time"><i class="fas fa-fire"></i> Cook Time (minutes)</label>
+            <input type="number" id="cook-time" value="30" min="0">
+        </div>
+        <div class="form-group">
+            <label for="servings"><i class="fas fa-users"></i> Servings</label>
+            
+            <!-- CHANGED: Updated to dropdown to match grocery list -->
+            <select id="servings" class="servings-select">
+                <option value="1">1 serving</option>
+                <option value="2">2 servings</option>
+                <option value="3">3 servings</option>
+                <option value="4" selected>4 servings</option>
+                <option value="5">5 servings</option>
+                <option value="6">6 servings</option>
+                <option value="8">8 servings</option>
+                <option value="10">10 servings</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label><i class="fas fa-carrot"></i> Ingredients *</label>
+        <div id="ingredients-container">
+            <div class="ingredient-item">
+                <input type="text" class="ingredient-input" placeholder="e.g., 2 cups all-purpose flour" data-index="0">
+                <button type="button" class="remove-btn" onclick="removeIngredient(0)"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline" onclick="addIngredientField()">
+            <i class="fas fa-plus"></i> Add Ingredient
+        </button>
+    </div>
+    
+    <div class="form-group">
+        <label><i class="fas fa-list-ol"></i> Instructions *</label>
+        <div id="instructions-container">
+            <div class="instruction-item">
+                <textarea class="instruction-input" placeholder="Step 1..." data-index="0" rows="2"></textarea>
+                <button type="button" class="remove-btn" onclick="removeInstruction(0)"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline" onclick="addInstructionField()">
+            <i class="fas fa-plus"></i> Add Step
+        </button>
+    </div>
+    
+    <div class="form-actions">
+        <button class="btn btn-large" onclick="saveRecipe()">
+            <i class="fas fa-save"></i> Save Recipe
+        </button>
+        <button class="btn btn-outline" onclick="clearRecipeForm()">
+            <i class="fas fa-eraser"></i> Clear Form
+        </button>
+    </div>
+    
+    <div id="save-status" class="save-status"></div>
+</section>
+            
+          <!-- Meal Plan Section -->
+          <section id="meal-plan" class="section">
+    <h2><i class="fas fa-calendar-alt"></i> Weekly Meal Plan</h2>
+    <p>Plan your meals for the week. Drag recipes into the calendar.</p>
+    
+   <div class="form-row meal-plan-controls">
+        <div class="form-group">
+            <label for="week-selector"><i class="fas fa-calendar-week"></i> Select Week</label>
+           <input type="week" id="week-selector" class="week-input">
+        </div>
+            <div class="form-group">
+                <label for="saved-weeks"><i class="fas fa-history"></i> Saved Weeks</label>
+               <select id="saved-weeks" onchange="loadSavedWeek(this.value)" class="saved-weeks-select">
+            <option value="">Select saved week...</option>
+        </select>
+    </div>
+        <div class="form-group">
+            <button class="btn" onclick="loadMealPlan()">
+                <i class="fas fa-sync"></i> Load Week
+            </button>
+             <button class="btn" onclick="saveMealPlan()">
+                <i class="fas fa-save"></i> Save Plan
+            </button>
+            <button class="btn" onclick="clearCurrentWeek()">
+                <i class="fas fa-trash"></i> Clear Week
+            </button>
+        </div>
+    </div>
+    
+  <div id="meal-plan-status" class="meal-plan-status"></div>
+    
+       <div id="meal-plan-container">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Select a week and click "Load Week" to start planning</p>
+        </div>
+    </div>
+
+    <!-- HOW TO USE SECTION -->
+   <div class="how-to-use">
+        <h3><i class="fas fa-question-circle"></i> How to Use</h3>
+            <ul class="how-to-use-list">
+            <li>Select a week using the date picker</li>
+            <li>Click "Load Week" to load/create a meal plan</li>
+            <li>Drag recipes from the panel below into calendar slots</li>
+            <li>Click "Save Plan" when finished</li>
+            <li>Generate a grocery list for the planned week</li>
+        </ul>
+    </div>
+</section>
+
+ <!-- Grocery List Section -->
+<section id="grocery" class="section">
+    <h2><i class="fas fa-shopping-cart"></i> Smart Grocery List</h2>
+    <p>Generate shopping lists from your meal plans. Check off items as you shop!</p>
+    
+    <div class="form-row grocery-controls">
+        <div class="form-group">
+            <label for="grocery-week-selector"><i class="fas fa-calendar-week"></i> Select Week</label>
+            <input type="week" id="grocery-week-selector" class="week-input">
+        </div>
+        
+        <div class="form-group">
+            <label for="servings-multiplier"><i class="fas fa-users"></i> Servings</label>
+           <select id="servings-multiplier" class="servings-select">
+                <option value="1">1 person</option>
+                <option value="2">2 people</option>
+                <option value="3">3 people</option>
+                <option value="4" selected>4 people</option>
+                <option value="6">6 people</option>
+                <option value="8">8 people</option>
+                <option value="10">10 people</option>
+        </select>
+        </div>
+        
+        <div class="form-group">
+            <button class="btn" onclick="generateGroceryList()">
+                <i class="fas fa-list"></i> Generate List
+            </button>
+            <button class="btn btn-outline" onclick="printGroceryList()">
+                <i class="fas fa-print"></i> Print
+            <!-- Add this button after the reset progress button -->
+            <button class="btn btn-success" onclick="markAllAsDone()" style="margin-left: 10px;">
+                <i class="fas fa-check-double"></i> Mark All Done
+            </button>
+            </button>
+        </div>
+    </div>
+    
+    <div id="grocery-status" class="grocery-status"></div>
+    
+    <div id="grocery-container" class="grocery-container">
+        <div class="recipe-card grocery-card">
+            <div class="recipe-header">
+                <h3 class="recipe-title" id="grocery-list-title">Grocery List</h3>
+                <div class="recipe-meta">
+                    <span id="grocery-week-display">Week:</span>
+                    <span id="grocery-item-count">0 items</span>
+                    <span id="grocery-servings-info">Servings: 1x</span>
+                </div>
+            </div>
+            <div class="recipe-body">
+                <div id="meal-plan-summary" class="meal-plan-summary"></div>
+                
+                <div class="grocery-layout">
+                    <!-- Ingredients Section -->
+                    <div class="grocery-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-carrot"></i> Ingredients to Buy
+                        </h4>
+                        <div id="grocery-list-items" class="grocery-ingredients-container">
+                            <!-- Items will be loaded here -->
+                        </div>
+                        <div class="click-instruction">
+                            <i class="fas fa-mouse-pointer"></i> Click anywhere on an ingredient to check it off
+                        </div>
+                    </div>
+                    
+                    <!-- Shopping Progress Section -->
+                    <div class="grocery-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-clipboard-check"></i> Shopping Progress
+                        </h4>
+                        <div class="grocery-progress-container">
+                            <div class="progress-percentage">
+                                <span id="shopping-progress">0</span>%
+                            </div>
+                            
+                            <!-- Progress bar -->
+                            <div class="progress-bar-container">
+                                <div id="shopping-progress-bar" class="progress-bar"></div>
+                            </div>
+                            
+                            <!-- Status with icon -->
+                            <div class="progress-status">
+                                <p id="shopping-status" class="shopping-status">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    Not started
+                                </p>
+                            </div>
+                            
+                            <!-- Completion message (hidden by default) -->
+                            <div id="completion-message" class="completion-message">
+                                <i class="fas fa-check-circle"></i>
+                                <strong>Shopping Complete!</strong>
+                            </div>
+                            
+                            <!-- Reset button -->
+                            <button class="btn btn-outline reset-progress-btn" onclick="clearShoppingProgress()">
+                                <i class="fas fa-redo"></i> Reset Progress
+                            </button>
+                            
+                            <!-- Stats -->
+                            <div class="progress-stats">
+                                <div class="stat-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span id="checked-count">0</span> of <span id="total-count">0</span> items
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-clock"></i>
+                                    Updated just now
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Shopping Tips -->
+                <div class="shopping-tips-container">
+                    <h4 class="tips-title">
+                        <i class="fas fa-lightbulb"></i> Smart Shopping Tips
+                    </h4>
+                    <div class="tips-grid">
+                        <div class="tip-card">
+                            <div class="tip-icon">
+                                <i class="fas fa-th-large"></i>
+                            </div>
+                            <strong>Organize by Store Sections</strong>
+                            <p>Group produce, dairy, meat, and pantry items together for efficient shopping.</p>
+                        </div>
+                        
+                        <div class="tip-card">
+                            <div class="tip-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <strong>Check Your Pantry First</strong>
+                            <p>Avoid buying duplicates by checking what you already have at home.</p>
+                        </div>
+                        
+                        <div class="tip-card">
+                            <div class="tip-icon">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <strong>Flexible Substitutions</strong>
+                            <p>Consider substituting ingredients based on availability and seasonality.</p>
+                        </div>
+                        
+                        <div class="tip-card">
+                            <div class="tip-icon">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                            <strong>Buy in Bulk</strong>
+                            <p>Purchase frequently used items in bulk to save money in the long run.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="no-grocery-list" class="no-grocery-list">
+        <i class="fas fa-shopping-basket"></i>
+        <h3>No Grocery List Generated</h3>
+        <p>Select a week and click "Generate List" to create your shopping list.</p>
+    </div>
+</section>
+        <footer>
+            <p><strong>Recipease Recipe Manager</strong> | Full Stack Application</p>
+            <p>Backend: Node.js + Express + SQLite | Frontend: HTML + CSS + JavaScript</p>
+            <p>© 2025 | Recipease Inc.</p>
+        </footer>
+    </div>
+
+        <!-- EDIT RECIPE MODAL -->
+    <div id="edit-recipe-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Edit Recipe</h3>
+                <button class="close-btn" onclick="closeEditModal()">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="edit-title"><i class="fas fa-heading"></i> Recipe Title *</label>
+                    <input type="text" id="edit-title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-description"><i class="fas fa-align-left"></i> Description</label>
+                    <textarea id="edit-description"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-category"><i class="fas fa-tag"></i> Category</label>
+                        <select id="edit-category">
+                            <option value="dinner">Dinner</option>
+                            <option value="breakfast">Breakfast</option>
+                            <option value="lunch">Lunch</option>
+                            <option value="dessert">Dessert</option>
+                            <option value="snack">Snack</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-prep-time"><i class="fas fa-clock"></i> Prep Time (minutes)</label>
+                        <input type="number" id="edit-prep-time" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-cook-time"><i class="fas fa-fire"></i> Cook Time (minutes)</label>
+                        <input type="number" id="edit-cook-time" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-servings"><i class="fas fa-users"></i> Servings</label>
+                        <select id="edit-servings" class="servings-select">
+                            <option value="1">1 serving</option>
+                            <option value="2">2 servings</option>
+                            <option value="3">3 servings</option>
+                            <option value="4">4 servings</option>
+                            <option value="5">5 servings</option>
+                            <option value="6">6 servings</option>
+                            <option value="8">8 servings</option>
+                            <option value="10">10 servings</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-carrot"></i> Ingredients *</label>
+                    <div id="edit-ingredients-container">
+                        <!-- Ingredients will be added here dynamically -->
+                    </div>
+                    <button type="button" class="btn btn-outline" onclick="addEditIngredientField()">
+                        <i class="fas fa-plus"></i> Add Ingredient
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-list-ol"></i> Instructions *</label>
+                    <div id="edit-instructions-container">
+                        <!-- Instructions will be added here dynamically -->
+                    </div>
+                    <button type="button" class="btn btn-outline" onclick="addEditInstructionField()">
+                        <i class="fas fa-plus"></i> Add Step
+                    </button>
+                </div>
+                
+                <div id="edit-save-status" class="save-status"></div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn" onclick="updateRecipe()">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <button class="btn btn-outline" onclick="closeEditModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn btn-danger" onclick="deleteRecipeById(currentRecipeId)" style="margin-left: auto;">
+                    <i class="fas fa-trash"></i> Delete Recipe
+                </button>
+            </div>
+        </div>
+    </div>
+<script src="script.js"></script>
+</body>
+</html>
