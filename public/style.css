@@ -773,7 +773,8 @@ select.category-filter option:checked {
 
 /* Form Inputs */
 .week-input {
-    width: 310px;
+    width: 100%;
+    min-width: 0;
 }
 
 .servings-select {
