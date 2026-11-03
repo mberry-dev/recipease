@@ -557,4 +557,4 @@ async function createApp({ dbPath = process.env.DB_PATH || path.join(__dirname, 
     return { app, db, close };
 }
 
-module.exports = { createApp, parseIngredient, buildGroceryList };
+module.exports = { createApp, parseIngredient, parseQuantity, buildGroceryList, validateRecipe, validateSlot, toWholeNumber };
