@@ -9,6 +9,7 @@ let currentRecipeId = null; // For edit modal
 
 // ============ INITIALIZATION ============
 window.onload = function() {
+    populateWeekSelectors();
     checkBackendConnection();
     setupNavigation();
     loadAllRecipes();
@@ -1827,8 +1828,10 @@ function updateSavedWeeksList() {
 function loadSavedWeek(week) {
     if (!week) return;
     
-    // Set the week selector
-    document.getElementById('week-selector').value = week;
+    // Set the week selector (add the week to the list if it is not there yet)
+    const weekSelect = document.getElementById('week-selector');
+    addWeekOption(weekSelect, week);
+    weekSelect.value = week;
     
     // Load the meal plan
     loadMealPlan();
@@ -2717,6 +2720,56 @@ function getWeekFromDate(date) {
     const week1 = new Date(d.getFullYear(), 0, 4);
     const week = 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
     return d.getFullYear() + '-W' + String(week).padStart(2, '0');
+}
+
+// ============ WEEK DROPDOWNS ============
+// Weeks are ISO weeks written like "2026-W45" and run Monday to Sunday.
+
+// Returns the Monday that starts an ISO week label
+function getWeekStartDate(weekLabel) {
+    const [year, week] = weekLabel.split('-W').map(Number);
+    const jan4 = new Date(year, 0, 4);
+    const monday = new Date(year, 0, 4 - ((jan4.getDay() + 6) % 7) + (week - 1) * 7);
+    return monday;
+}
+
+// Readable text for a week, for example "Week 45: Nov 2 - Nov 8, 2026"
+function formatWeekLabel(weekLabel) {
+    const start = getWeekStartDate(weekLabel);
+    const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+    const shortDate = { month: 'short', day: 'numeric' };
+    const longDate = { month: 'short', day: 'numeric', year: 'numeric' };
+    return `Week ${Number(weekLabel.split('-W')[1])}: ` +
+        `${start.toLocaleDateString('en-US', shortDate)} - ${end.toLocaleDateString('en-US', longDate)}`;
+}
+
+// Adds a week to a dropdown in order, unless it is already listed
+function addWeekOption(select, weekLabel) {
+    if (!select || !weekLabel) return;
+    const options = Array.from(select.options);
+    if (options.some(option => option.value === weekLabel)) return;
+
+    const newOption = new Option(formatWeekLabel(weekLabel), weekLabel);
+    const later = options.find(option => option.value && option.value > weekLabel);
+    select.add(newOption, later || null);
+}
+
+// Fills both week dropdowns with the weeks around today and selects the current week
+function populateWeekSelectors() {
+    const thisWeek = getWeekFromDate(new Date());
+    const thisMonday = getWeekStartDate(thisWeek);
+
+    ['week-selector', 'grocery-week-selector'].forEach(id => {
+        const select = document.getElementById(id);
+        if (!select) return;
+
+        select.innerHTML = '<option value="">Select a week...</option>';
+        for (let offset = -12; offset <= 40; offset++) {
+            const monday = new Date(thisMonday.getFullYear(), thisMonday.getMonth(), thisMonday.getDate() + offset * 7);
+            addWeekOption(select, getWeekFromDate(monday));
+        }
+        select.value = thisWeek;
+    });
 }
 
 // Temporary debug function to check sorting

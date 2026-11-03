@@ -7,7 +7,7 @@ Built with Node.js, Express, SQLite and a plain HTML/CSS/JavaScript frontend. On
 ## Features
 
 - **Recipe manager:** add, edit, delete, search and filter recipes by category, with ingredients, step-by-step instructions, prep and cook times, and servings
-- **Weekly meal planner:** drag recipes onto a Monday-to-Sunday calendar (Breakfast, Lunch, Dinner), save the week, reload it later, or clear it
+- **Weekly meal planner:** pick a week from a dropdown (Monday to Sunday), drag recipes onto the calendar (Breakfast, Lunch, Dinner), save the week, reload it later, or clear it
 - **Grocery list:** generated from the week's meal plan, scaled for 1 to N people, with duplicate ingredients combined, a shopping checklist that remembers your progress, and print support
 - **Dashboard** with recipe counts and a live backend status check
 - **REST API** with input validation and JSON error responses
@@ -39,10 +39,23 @@ If `npm install` fails on `sqlite3`, update Node.js to the current LTS release. 
 
 ## Tests
 
-45 automated tests (Jest and Supertest) cover every API route: recipe create/read/update/delete, input validation, meal-plan slots, the bulk week save, grocery-list combining and scaling, and error handling. Each test runs against its own in-memory database.
+100 automated tests (Jest and Supertest) in three groups:
+
+- **API tests** call every route on a real Express app with an in-memory database: recipe create/read/update/delete, input validation, meal-plan slots, the bulk week save, grocery-list combining and scaling, and error handling
+- **Unit tests** check the pure functions on their own: recipe and meal-slot validation, ingredient parsing, grocery-list building, ISO week math, and that the sample data passes the same validation as user input
+- **Frontend tests** load `public/script.js` in a sandbox and check the week dropdown code, including that the page and the server agree on the week number for every day from 2020 to 2031
 
 ```bash
 npm test
+```
+
+### Live check
+
+`npm run smoke` runs a read-only check against a running server (the API shape, error handling, and the grocery list). Point it at the deployed site to confirm a deployment works:
+
+```bash
+npm run smoke
+npm run smoke -- https://your-app.onrender.com
 ```
 
 ## API
@@ -82,7 +95,8 @@ recipease/
 ├── schema.sql         # SQLite tables and constraints
 ├── render.yaml        # Render deployment blueprint
 ├── public/            # Frontend: index.html, script.js, style.css
-├── tests/             # Automated API tests
+├── tests/             # API, unit and frontend tests
+├── scripts/           # smoke.js: live check of a running server
 ├── docs/              # Project report and tutorial (PDF and Word)
 └── data/              # SQLite database (created on first run, not committed)
 ```
