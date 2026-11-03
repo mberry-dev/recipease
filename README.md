@@ -7,7 +7,7 @@ Built with Node.js, Express, SQLite and a plain HTML/CSS/JavaScript frontend. On
 ## Features
 
 - **Recipe manager:** add, edit, delete, search and filter recipes by category, with ingredients, step-by-step instructions, prep and cook times, and servings
-- **Weekly meal planner:** pick a week from a dropdown (Monday to Sunday), drag recipes onto the calendar (Breakfast, Lunch, Dinner), save the week, reload it later, or clear it
+- **Weekly meal planner:** step through weeks (Monday to Sunday) with arrows, drag recipes onto the calendar (Breakfast, Lunch, Dinner), save the week, reload it later, or clear it
 - **Grocery list:** generated from the week's meal plan, scaled for 1 to N people, with duplicate ingredients combined, a shopping checklist that remembers your progress, and print support
 - **Dashboard** with recipe counts and a live backend status check
 - **REST API** with input validation and JSON error responses
@@ -39,11 +39,11 @@ If `npm install` fails on `sqlite3`, update Node.js to the current LTS release. 
 
 ## Tests
 
-100 automated tests (Jest and Supertest) in three groups:
+110 automated tests (Jest and Supertest) in three groups:
 
 - **API tests** call every route on a real Express app with an in-memory database: recipe create/read/update/delete, input validation, meal-plan slots, the bulk week save, grocery-list combining and scaling, and error handling
 - **Unit tests** check the pure functions on their own: recipe and meal-slot validation, ingredient parsing, grocery-list building, ISO week math, and that the sample data passes the same validation as user input
-- **Frontend tests** load `public/script.js` in a sandbox and check the week dropdown code, including that the page and the server agree on the week number for every day from 2020 to 2031
+- **Frontend tests** load `public/script.js` in a sandbox and check the week navigation code (stepping across New Year, labels), including that the page and the server agree on the week number for every day from 2020 to 2031
 
 ```bash
 npm test

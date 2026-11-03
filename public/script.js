@@ -9,7 +9,7 @@ let currentRecipeId = null; // For edit modal
 
 // ============ INITIALIZATION ============
 window.onload = function() {
-    populateWeekSelectors();
+    setupWeekNavigation();
     checkBackendConnection();
     setupNavigation();
     loadAllRecipes();
@@ -1828,10 +1828,8 @@ function updateSavedWeeksList() {
 function loadSavedWeek(week) {
     if (!week) return;
     
-    // Set the week selector (add the week to the list if it is not there yet)
-    const weekSelect = document.getElementById('week-selector');
-    addWeekOption(weekSelect, week);
-    weekSelect.value = week;
+    // Set the week selector
+    setWeek('week-selector', week);
     
     // Load the meal plan
     loadMealPlan();
@@ -2722,7 +2720,7 @@ function getWeekFromDate(date) {
     return d.getFullYear() + '-W' + String(week).padStart(2, '0');
 }
 
-// ============ WEEK DROPDOWNS ============
+// ============ WEEK NAVIGATION ============
 // Weeks are ISO weeks written like "2026-W45" and run Monday to Sunday.
 
 // Returns the Monday that starts an ISO week label
@@ -2733,42 +2731,57 @@ function getWeekStartDate(weekLabel) {
     return monday;
 }
 
-// Readable text for a week, for example "Week 45: Nov 2 - Nov 8, 2026"
-function formatWeekLabel(weekLabel) {
+// Returns the week label that is `count` weeks after (or before, if negative) the given one
+function addWeeks(weekLabel, count) {
+    const monday = getWeekStartDate(weekLabel);
+    return getWeekFromDate(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + count * 7));
+}
+
+// Dates a week covers, for example "Nov 2 - Nov 8, 2026" (years are shown on both ends across New Year)
+function formatWeekRange(weekLabel) {
     const start = getWeekStartDate(weekLabel);
     const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
-    const shortDate = { month: 'short', day: 'numeric' };
-    const longDate = { month: 'short', day: 'numeric', year: 'numeric' };
-    return `Week ${Number(weekLabel.split('-W')[1])}: ` +
-        `${start.toLocaleDateString('en-US', shortDate)} - ${end.toLocaleDateString('en-US', longDate)}`;
+    const withoutYear = { month: 'short', day: 'numeric' };
+    const withYear = { month: 'short', day: 'numeric', year: 'numeric' };
+    const startFormat = start.getFullYear() === end.getFullYear() ? withoutYear : withYear;
+    return `${start.toLocaleDateString('en-US', startFormat)} \u2013 ${end.toLocaleDateString('en-US', withYear)}`;
 }
 
-// Adds a week to a dropdown in order, unless it is already listed
-function addWeekOption(select, weekLabel) {
-    if (!select || !weekLabel) return;
-    const options = Array.from(select.options);
-    if (options.some(option => option.value === weekLabel)) return;
+// Shows a week in a week navigator and stores it in that navigator's hidden input
+function setWeek(inputId, weekLabel) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    input.value = weekLabel;
 
-    const newOption = new Option(formatWeekLabel(weekLabel), weekLabel);
-    const later = options.find(option => option.value && option.value > weekLabel);
-    select.add(newOption, later || null);
+    const nav = document.querySelector(`[data-week-nav="${inputId}"]`);
+    if (!nav) return;
+
+    const isThisWeek = weekLabel === getWeekFromDate(new Date());
+    nav.querySelector('.week-nav-dates').textContent = formatWeekRange(weekLabel);
+    nav.querySelector('.week-nav-number').textContent =
+        `Week ${Number(weekLabel.split('-W')[1])}${isThisWeek ? ' \u00B7 This week' : ''}`;
+    nav.querySelector('.week-nav-today').hidden = isThisWeek;
 }
 
-// Fills both week dropdowns with the weeks around today and selects the current week
-function populateWeekSelectors() {
-    const thisWeek = getWeekFromDate(new Date());
-    const thisMonday = getWeekStartDate(thisWeek);
+// Moves a week navigator forward or back by whole weeks
+function stepWeek(inputId, count) {
+    const input = document.getElementById(inputId);
+    const current = (input && input.value) || getWeekFromDate(new Date());
+    setWeek(inputId, addWeeks(current, count));
+}
 
-    ['week-selector', 'grocery-week-selector'].forEach(id => {
-        const select = document.getElementById(id);
-        if (!select) return;
+// Starts both week navigators on the current week and wires up their buttons
+function setupWeekNavigation() {
+    document.querySelectorAll('[data-week-nav]').forEach(nav => {
+        const inputId = nav.getAttribute('data-week-nav');
+        setWeek(inputId, getWeekFromDate(new Date()));
 
-        select.innerHTML = '<option value="">Select a week...</option>';
-        for (let offset = -12; offset <= 40; offset++) {
-            const monday = new Date(thisMonday.getFullYear(), thisMonday.getMonth(), thisMonday.getDate() + offset * 7);
-            addWeekOption(select, getWeekFromDate(monday));
-        }
-        select.value = thisWeek;
+        nav.querySelectorAll('[data-step]').forEach(button => {
+            button.addEventListener('click', () => stepWeek(inputId, Number(button.getAttribute('data-step'))));
+        });
+        nav.querySelector('.week-nav-today').addEventListener('click', () => {
+            setWeek(inputId, getWeekFromDate(new Date()));
+        });
     });
 }
 
