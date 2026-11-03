@@ -82,12 +82,6 @@ npm run smoke -- https://recipease-uj0p.onrender.com
 
 Weeks use the ISO format `YYYY-Www` (for example `2026-W45`). Days are `Monday` to `Sunday`; meal types are `Breakfast`, `Lunch`, `Dinner` and `Snack`.
 
-## Deploy to Render
-
-The repo includes a `render.yaml` blueprint. In Render, choose **New → Blueprint**, connect this repository, and deploy. Render runs `npm install`, starts the app with `npm start`, and uses `/api/health` as its health check.
-
-On Render's free plan the SQLite file is temporary, so the demo resets to the sample data whenever the service restarts or wakes from sleep.
-
 ## Project Structure
 
 ```
