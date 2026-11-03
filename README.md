@@ -4,6 +4,9 @@ A full-stack recipe manager. Save recipes, plan a week of meals on a drag-and-dr
 
 Built with Node.js, Express, SQLite and a plain HTML/CSS/JavaScript frontend. One server runs both the API and the website.
 
+**Live demo:** https://recipease-uj0p.onrender.com
+It's on Render's free plan, so the first visit can take up to a minute while the server wakes up, and the demo data resets whenever it restarts.
+
 ## Features
 
 - **Recipe manager:** add, edit, delete, search and filter recipes by category, with ingredients, step-by-step instructions, prep and cook times, and servings
@@ -55,7 +58,7 @@ npm test
 
 ```bash
 npm run smoke
-npm run smoke -- https://your-app.onrender.com
+npm run smoke -- https://recipease-uj0p.onrender.com
 ```
 
 ## API
