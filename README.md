@@ -32,7 +32,7 @@ You need [Node.js](https://nodejs.org) 18 or newer (the LTS version is fine).
    ```bash
    npm start
    ```
-4. Open http://localhost:5000 in your browser.
+4. Open `http://localhost:5000` in your browser. It only works while the server is running on your own computer.
 
 On first run the server creates `data/recipes.db` and fills it with five sample recipes and a sample meal plan for the current week. To reset to the sample data, stop the server, delete the `data/` folder, and start it again.
 
